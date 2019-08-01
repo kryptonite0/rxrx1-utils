@@ -61,7 +61,6 @@ def load_images_as_tensor(image_paths, dtype=np.uint8):
 def convert_tensor_to_rgb(t, channels=DEFAULT_CHANNELS, vmax=255, rgb_map=RGB_MAP):
     """
     Converts and returns the image data as RGB image
-
     Parameters
     ----------
     t : np.ndarray
@@ -73,7 +72,6 @@ def convert_tensor_to_rgb(t, channels=DEFAULT_CHANNELS, vmax=255, rgb_map=RGB_MA
     rgb_map : dict
         the color mapping for each channel
         See rxrx.io.RGB_MAP to see what the defaults are.
-
     Returns
     -------
     np.ndarray the image data of the site as RGB channels
@@ -85,13 +83,12 @@ def convert_tensor_to_rgb(t, channels=DEFAULT_CHANNELS, vmax=255, rgb_map=RGB_MA
             rgb_map[channel]['range'][0] / 255
         x = np.where(x > 1., 1., x)
         x_rgb = np.array(
-            np.outer(x, rgb_map[channel]['rgb']).reshape(512, 512, 3),
+            np.outer(x, rgb_map[channel]['rgb']).reshape(t.shape[0], t.shape[1], 3),
             dtype=int)
         colored_channels.append(x_rgb)
     im = np.array(np.array(colored_channels).sum(axis=0), dtype=int)
     im = np.where(im > 255, 255, im)
     return im
-
 
 def image_path(dataset,
                experiment,
@@ -228,6 +225,10 @@ def _load_dataset(base_path, dataset, include_controls=True):
     res = pd.concat(dfs).sort_values(
         by=['id_code', 'site']).set_index('id_code')
     return res
+
+def _load_stats(base_path=DEFAULT_METADATA_BASE_PATH):
+    df = _tf_read_csv(os.path.join(base_path, 'pixel_stats.csv'))
+    return df
 
 
 def combine_metadata(base_path=DEFAULT_METADATA_BASE_PATH,
